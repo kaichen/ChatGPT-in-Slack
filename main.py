@@ -84,4 +84,4 @@ if __name__ == "__main__":
             return make_response("OK", 200)
         return make_response("The Socket Mode client is inactive", 503)
 
-    flask_app.run(port=os.environ.get("PORT", 8080))
+    flask_app.run(port=os.environ.get("PORT", 8080), host=os.environ.get("HOST", "0.0.0.0"))
