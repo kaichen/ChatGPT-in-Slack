@@ -18,6 +18,8 @@ from app.slack_ops import (
 )
 from app.i18n import translate
 
+from flask import Flask, make_response
+
 
 if __name__ == "__main__":
     from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -71,4 +73,15 @@ if __name__ == "__main__":
         next_()
 
     handler = SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"])
-    handler.start()
+    handler.connect()
+
+    # Web app for hosting the healthcheck endpoint for k8s etc.
+    flask_app = Flask(__name__)
+
+    @flask_app.route("/health", methods=["GET"])
+    def slack_events():
+        if handler.client is not None and handler.client.is_connected():
+            return make_response("OK", 200)
+        return make_response("The Socket Mode client is inactive", 503)
+
+    flask_app.run(port=os.environ.get("PORT", 8080))
